@@ -1,4 +1,3 @@
-########################################################################################################################################
 Backend Developer Test
 
 Your task is to create a simple Spring Boot service, that is able to calculate any possible land
@@ -33,7 +32,7 @@ Expected deliveries:
 1. Source code
 2. Instructions on how to build and run the application
 
-########################################################################################################################################
+----------------------------------------------------------------------
 
 Test cases in LandRouteApplicationTest.java:
 ```
@@ -44,7 +43,7 @@ Test cases in LandRouteApplicationTest.java:
 ```
 
 
-########################################################################################################################################
+----------------------------------------------------------------------
 
 How to run (Maven and JDK11 required): 
 
@@ -57,7 +56,7 @@ B. enter the project's directory in command line tool of choosing and run
 
 and project will be built and tested.
 
-########################################################################################################################################
+----------------------------------------------------------------------
 
 My comments:
 
@@ -66,4 +65,4 @@ My comments:
 2. You provided explanation for "cca3" field but none for field with border crossings.
 3. Shouldn't you know how to run a project in strictly specified tech stack?
 
-########################################################################################################################################
+----------------------------------------------------------------------

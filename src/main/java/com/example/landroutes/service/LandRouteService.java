@@ -3,6 +3,8 @@ package com.example.landroutes.service;
 import com.example.landroutes.exception.NoLandRouteException;
 import com.example.landroutes.exception.NoSuchCountryException;
 import com.example.landroutes.model.Country;
+import com.example.landroutes.model.RouteNode;
+import com.example.landroutes.model.RouteTree;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -32,7 +30,7 @@ public class LandRouteService {
 
         checkForIslands(origin, destination);
 
-        List<String> route = getRoute(origin, destination);
+        List<String> route = generateRoute(origin, destination);
 
         if (route.isEmpty()) {
             throw new NoLandRouteException(origin, destination);
@@ -41,25 +39,16 @@ public class LandRouteService {
         return route;
     }
 
-    private List<String> getRoute(String origin, String destination) {
-        DefaultMutableTreeNode originNode = new DefaultMutableTreeNode(origin);
-        addNeighborNodes(originNode, getCountryForIdentifier(origin));
-
-    }
-
-    private void addNeighborNodes(DefaultMutableTreeNode node, Country country) {
-        country.getNeighbors().forEach(neighbor ->
-                {
-                    //todo dodaj node dla kazdego nowego kraju - przerób isnotbacktracking
-                }
-        );
+    private List<String> generateRoute(String origin, String destination) {
+        //todo by level with check if current node == destination -> end
+        return Collections.emptyList();
     }
 
 
-    private boolean isNotBacktracking(List<String> route, Country parent, String neighbor) {
+    private boolean isNotBacktracking(RouteTree tree, Country parent, String current) {
         if (parent != null) {
-            log.info("Checking if {} is not on current route {} already and its not one of parent's neighbors {}", neighbor, route, parent.getNeighbors());
-            return route.stream().noneMatch(neighbor::equals) && parent.getNeighbors().stream().noneMatch(neighbor::equals);
+            return tree.isCountryAlreadyVisited(current)
+                    && parent.getNeighbors().stream().noneMatch(current::equals);
         }
         return false;
     }

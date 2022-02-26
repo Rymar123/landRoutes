@@ -17,7 +17,7 @@ public class LandRouteController {
     private final LandRouteService landRouteService;
 
     @GetMapping(value = "{origin}/{destination}", produces = "application/json")
-    public List<String> greeting(@PathVariable String origin, @PathVariable String destination) {
+    public List<String> getRoute(@PathVariable String origin, @PathVariable String destination) {
         return landRouteService.getFirstShortestRoute(origin, destination);
     }
 }

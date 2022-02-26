@@ -1,8 +1,10 @@
 package com.example.landroutes.service;
 
+import com.example.landroutes.exception.EmptyTreeLevelException;
 import com.example.landroutes.exception.NoLandRouteException;
 import com.example.landroutes.exception.NoSuchCountryException;
 import com.example.landroutes.model.Country;
+import com.example.landroutes.model.LandRouteResponse;
 import com.example.landroutes.model.RouteNode;
 import com.example.landroutes.model.RouteTree;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,8 +24,9 @@ import java.util.*;
 public class LandRouteService {
 
     private List<Country> countries;
+    private RouteTree routeTree;
 
-    public List<String> getFirstShortestRoute(String origin, String destination) {
+    public LandRouteResponse getFirstShortestRoute(String origin, String destination) {
         if (countries == null) {
             init();
         }
@@ -36,21 +39,46 @@ public class LandRouteService {
             throw new NoLandRouteException(origin, destination);
         }
 
-        return route;
+        return new LandRouteResponse(route);
     }
 
     private List<String> generateRoute(String origin, String destination) {
-        //todo by level with check if current node == destination -> end
-        return Collections.emptyList();
+        Country originCountry = getCountryForIdentifier(origin);
+        RouteNode root = new RouteNode(0, originCountry, null);
+        routeTree = new RouteTree(root);
+
+        Optional<RouteNode> destinationNode = Optional.empty();
+
+        for (int level = 1; level < countries.size(); level++) {
+            destinationNode = routeTree.getTopNodeForIdentifier(destination);
+            if (destinationNode.isPresent()) {
+                break;
+            }
+            try {
+                addNodesByLevel(level);
+            } catch (EmptyTreeLevelException e) {
+                throw new NoLandRouteException(origin, destination);
+            }
+        }
+
+        return destinationNode.orElseThrow(() -> new NoLandRouteException(origin, destination)).getRoute();
     }
 
+    private void addNodesByLevel(int level) {
+        List<RouteNode> topNodes = routeTree.getTopNodes();
+        routeTree.addLevel(level);
 
-    private boolean isNotBacktracking(RouteTree tree, Country parent, String current) {
-        if (parent != null) {
-            return tree.isCountryAlreadyVisited(current)
-                    && parent.getNeighbors().stream().noneMatch(current::equals);
+        topNodes.forEach(node ->
+                node.getCountry().getNeighbors().forEach(neighbor ->
+                        addNodeByLevel(level, node, neighbor)));
+    }
+
+    private void addNodeByLevel(int level, RouteNode parentNode, String current) {
+        if (routeTree.isCountryNotYetVisited(current)) {
+            Country neighborCountry = getCountryForIdentifier(current);
+            RouteNode childNode = new RouteNode(level, neighborCountry, parentNode);
+            routeTree.addNodeAtLevel(childNode, level);
         }
-        return false;
     }
 
     private Country getCountryForIdentifier(String identifier) {

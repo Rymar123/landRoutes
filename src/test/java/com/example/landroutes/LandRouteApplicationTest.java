@@ -20,10 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class LandRouteApplicationTest {
-    private static final String EXPECTED_DATA = """
-            {
-              "route": ["CZE", "AUT", "ITA"]
-            }""";
+    private static final String EXPECTED_DATA = "{\"route\": [\"CZE\", \"AUT\", \"ITA\"]}";
 
     @Autowired
     private MockMvc mockMvc;

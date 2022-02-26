@@ -6,6 +6,7 @@ import java.util.*;
 
 public class RouteTree {
     private final Map<Integer, List<RouteNode>> nodesByLevel;
+    private int topLevel = 0;
 
     public RouteTree(RouteNode root) {
         nodesByLevel = new HashMap<>();
@@ -14,15 +15,15 @@ public class RouteTree {
 
     public boolean isCountryNotYetVisited(String identifier) {
         return getTopNodes().stream().noneMatch(topNode ->
-                        topNode.getRoute().stream().anyMatch(identifier::equals));
+                topNode.getRoute().stream().anyMatch(identifier::equals));
     }
 
     public List<RouteNode> getTopNodes() {
-        return nodesByLevel.get(getTopLevel());
+        return nodesByLevel.get(topLevel);
     }
 
-    public void addNodeAtLevel(RouteNode node, int level) {
-        nodesByLevel.get(level).add(node);
+    public void addNode(RouteNode node) {
+        nodesByLevel.get(topLevel).add(node);
     }
 
     public Optional<RouteNode> getTopNodeForIdentifier(String identifier) {
@@ -32,14 +33,12 @@ public class RouteTree {
                 .findAny();
     }
 
-    public void addLevel(int level) {
-        if(nodesByLevel.get(level - 1).isEmpty()) {
-            throw new EmptyTreeLevelException(level - 1);
+    public void addLevel() {
+        if (nodesByLevel.get(topLevel).isEmpty()) {
+            throw new EmptyTreeLevelException(topLevel);
         }
-        nodesByLevel.put(level, new ArrayList<>());
-    }
 
-    private int getTopLevel() {
-        return nodesByLevel.size() - 1;
+        topLevel++;
+        nodesByLevel.put(topLevel, new ArrayList<>());
     }
 }

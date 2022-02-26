@@ -7,32 +7,23 @@ import com.example.landroutes.model.Country;
 import com.example.landroutes.model.LandRouteResponse;
 import com.example.landroutes.model.RouteNode;
 import com.example.landroutes.model.RouteTree;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class LandRouteService {
 
-    private List<Country> countries;
+    private final List<Country> countries;
     private RouteTree routeTree;
 
+    public LandRouteService(CountryDataProvider dataProvider) {
+        countries = dataProvider.run();
+    }
+
     public LandRouteResponse getFirstShortestRoute(String origin, String destination) {
-        if (countries == null) {
-            init();
-        }
-
         checkForIslands(origin, destination);
-
         List<String> route = generateRoute(origin, destination);
 
         if (route.isEmpty()) {
@@ -46,7 +37,6 @@ public class LandRouteService {
         Country originCountry = getCountryForIdentifier(origin);
         RouteNode root = new RouteNode(0, originCountry, null);
         routeTree = new RouteTree(root);
-
         Optional<RouteNode> destinationNode = Optional.empty();
 
         for (int level = 1; level < countries.size(); level++) {
@@ -66,23 +56,21 @@ public class LandRouteService {
 
     private void addNodesByLevel(int level) {
         List<RouteNode> topNodes = routeTree.getTopNodes();
-        routeTree.addLevel(level);
-
+        routeTree.addLevel();
         topNodes.forEach(node ->
                 node.getCountry().getNeighbors().forEach(neighbor ->
-                        addNodeByLevel(level, node, neighbor)));
+                        addNodeToLevel(level, node, neighbor)));
     }
 
-    private void addNodeByLevel(int level, RouteNode parentNode, String current) {
+    private void addNodeToLevel(int level, RouteNode parentNode, String current) {
         if (routeTree.isCountryNotYetVisited(current)) {
             Country neighborCountry = getCountryForIdentifier(current);
             RouteNode childNode = new RouteNode(level, neighborCountry, parentNode);
-            routeTree.addNodeAtLevel(childNode, level);
+            routeTree.addNode(childNode);
         }
     }
 
     private Country getCountryForIdentifier(String identifier) {
-        log.info("Getting country by id: {}", identifier);
         return countries.stream()
                 .filter(country -> identifier.equals(country.getIdentifier()))
                 .findAny()
@@ -90,8 +78,6 @@ public class LandRouteService {
     }
 
     private void checkForIslands(String origin, String destination) {
-        log.info("Checking if provided countries have any neighbors...");
-
         if (hasNeighbors(getCountryForIdentifier(origin)) || hasNeighbors(getCountryForIdentifier(destination))) {
             throw new NoLandRouteException(origin, destination);
         }
@@ -99,16 +85,5 @@ public class LandRouteService {
 
     private boolean hasNeighbors(Country country) {
         return country.getNeighbors().isEmpty();
-    }
-
-    private void init() {
-        log.info("Parsing source JSON using Jackson...");
-        try {
-            File resourceFile = new ClassPathResource("countries.json").getFile();
-            countries = new ObjectMapper().readValue(resourceFile, new TypeReference<>() {
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

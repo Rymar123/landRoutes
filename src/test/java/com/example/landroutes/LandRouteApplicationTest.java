@@ -1,10 +1,12 @@
 package com.example.landroutes;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -14,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 class LandRouteApplicationTest {
@@ -56,5 +59,17 @@ class LandRouteApplicationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(EXPECTED_DATA));
+    }
+
+    @Test
+    @Order(4)
+    void shouldReturnSingleLandRouteForModifiedExample() throws Exception {
+        MockHttpServletResponse response = this.mockMvc.perform(get("/routing/CZE/POL"))
+                .andDo(print())
+                .andExpect(status().isOk()).
+                andReturn()
+                .getResponse();
+
+        log.info(response.toString());
     }
 }

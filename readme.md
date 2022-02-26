@@ -42,7 +42,6 @@ Test cases in LandRouteApplicationTest.java:
 3. shouldReturn400IfOriginCountryUnrecognized
 4. shouldReturn400IfDestinationCountryUnrecognized
 ```
-Test cases are supported with logs explaining the actions as they are being run.
 
 
 ########################################################################################################################################
